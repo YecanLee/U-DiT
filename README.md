@@ -28,6 +28,9 @@ This is the official implementation of ["U-DiTs: Downsample Tokens in U-Shaped D
 
 ![effect](imgs/effect.png)
 
+## TL; DR, Generating 50k images for FiD score evaluation
+Run the following commmand to generate 
+
 ## Preparation
 
 Please run command ```pip install -r requirements.txt``` to install the supporting packages.
