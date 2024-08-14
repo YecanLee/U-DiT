@@ -31,11 +31,26 @@ This is the official implementation of ["U-DiTs: Downsample Tokens in U-Shaped D
 ## TL; DR, Generating 50k images for FiD score evaluation
 Run the following command to generate 50 images for each ImageNet Class for FiD score calculation by using __a single GPU__.
 ```shell
-python generation_single_gpu.py --cfg-scale 1.5 --num-samples-per-class 50 --image-size 256 --tf32 # for faster inference speed
+python generation_single_gpu.py \
+--model U-DiT-L \
+--cfg-scale 1.5 \
+--num-samples-per-class 50 \
+--image-size 256 \
+--tf32 \
+--ckpt YOUR_CHECKPOINT_PATH 
 ```
 Run the following command to generate 50 images for each ImageNet Class for FiD score calculation by using __multiplt GPUs__.
 ```shell
-python generation_multi_gpus.py --cfg-scale 1.5 --num-samples-per-class 50 --image-size 256 --per-proc-batch-size32 --tf32
+torchrun \
+--nproc_per_node 2 \
+generation_multi_gpus.py \
+--model U-DiT-L \
+--cfg-scale 1.5 \
+--num-samples-per-class 50 \
+--image-size 256 \
+--per-proc-batch-size32 \
+--tf32 \
+--ckpt YOUR_CHECKPOINT_PATH 
 ```
 
 ## Preparation

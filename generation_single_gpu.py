@@ -129,7 +129,6 @@ def main(args, unparsed):
     for class_label in pbar:
         for _ in range(iteration_per_class):
             # Sample inputs:
-            print(class_label, "here is the class label")
             z = torch.randn(batch_size, model.in_channels, latent_size, latent_size, device=device)
             y = torch.tensor([class_label] * batch_size, device=device)
 
