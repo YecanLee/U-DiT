@@ -101,6 +101,7 @@ def main(args, unparsed):
     ckpt_path = args.ckpt or f"DiT-XL-2-{args.image_size}x{args.image_size}.pt"
     state_dict = find_model(ckpt_path)
     model.load_state_dict(state_dict)
+    model = torch.compile(model)
     model.eval()  # important!
     diffusion = create_diffusion(str(args.num_sampling_steps))
     vae = AutoencoderKL.from_pretrained(f"stabilityai/sd-vae-ft-{args.vae}").to(device)
@@ -119,17 +120,17 @@ def main(args, unparsed):
     # Figure out how many samples we need to generate on a single GPU and how many iterations we need to run:
     batch_size = args.batch_size
     # To make things evenly-divisible, we'll sample a bit more than we need and then discard the extra samples:
-    total_samples = int(math.ceil(args.num_samples / batch_size)) 
-    print(f"Total number of images that will be sampled: {total_samples}")
+    total_steps = int(math.ceil(args.num_samples / batch_size)) 
+    print(f"Total Steps for Sampling: {total_steps}")
     pbar = trange(args.num_classes, desc="Sampling", disable=False)
     total = 0
     iterator = args.num_samples_per_class // args.batch_size 
     iteration_per_class = iterator + 1 if args.num_samples_per_class % args.batch_size != 0 else iterator
-    for _ in pbar:
+    for class_label in pbar:
         for _ in range(iteration_per_class):
             # Sample inputs:
             z = torch.randn(batch_size, model.in_channels, latent_size, latent_size, device=device)
-            y = torch.randint(0, args.num_classes, (batch_size,), device=device)
+            y = torch.tensor([class_label] * batch_size, device=device)
 
             # Setup classifier-free guidance:
             if using_cfg:
@@ -158,11 +159,6 @@ def main(args, unparsed):
                 Image.fromarray(sample).save(f"{sample_folder_dir}/{index:06d}.png")
             total += batch_size
 
-        # Make sure all processes have finished saving their samples before attempting to convert to .npz
-        create_npz_from_sample_folder(sample_folder_dir, args.num_fid_samples)
-        print("Done.")
-
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", type=str, default="U-DiT-S")
@@ -177,7 +173,7 @@ if __name__ == "__main__":
     parser.add_argument("--cfg-scale",  type=float, default=1.5)
     parser.add_argument("--num-sampling-steps", type=int, default=250)
     parser.add_argument("--global-seed", type=int, default=0)
-    parser.add_argument("--tf32", default=True,
+    parser.add_argument("--tf32", action="store_true",
                         help="By default, use TF32 matmuls. This massively accelerates sampling on Ampere GPUs.")
     parser.add_argument("--ckpt", type=str, default=None,
                         help="Optional path to a DiT checkpoint (default: auto-download a pre-trained DiT-XL/2 model).")
