@@ -117,10 +117,8 @@ def main(args, unparsed):
     os.makedirs(sample_folder_dir, exist_ok=True)
     print(f"Saving .png samples at {sample_folder_dir}")
 
-    # Figure out how many samples we need to generate on a single GPU and how many iterations we need to run:
-    batch_size = args.batch_size
     # To make things evenly-divisible, we'll sample a bit more than we need and then discard the extra samples:
-    total_steps = int(math.ceil(args.num_samples / batch_size)) 
+    total_steps = int(math.ceil(args.num_samples / args.batch_size)) 
     print(f"Total Steps for Sampling: {total_steps}")
     pbar = trange(args.num_classes, desc="Sampling", disable=False)
     total = 0
@@ -129,13 +127,13 @@ def main(args, unparsed):
     for class_label in pbar:
         for _ in range(iteration_per_class):
             # Sample inputs:
-            z = torch.randn(batch_size, model.in_channels, latent_size, latent_size, device=device)
-            y = torch.tensor([class_label] * batch_size, device=device)
+            z = torch.randn(args.batch_size, model.in_channels, latent_size, latent_size, device=device)
+            y = torch.tensor([class_label] * args.batch_size, device=device)
 
             # Setup classifier-free guidance:
             if using_cfg:
                 z = torch.cat([z, z], 0)
-                y_null = torch.tensor([1000] * batch_size, device=device)
+                y_null = torch.tensor([1000] * args.batch_size, device=device)
                 y = torch.cat([y, y_null], 0)
                 model_kwargs = dict(y=y, cfg_scale=args.cfg_scale)
                 sample_fn = model.forward_with_cfg
@@ -157,7 +155,7 @@ def main(args, unparsed):
             for i, sample in enumerate(samples):
                 index = i + total
                 Image.fromarray(sample).save(f"{sample_folder_dir}/{index:06d}.png")
-            total += batch_size
+            total += args.batch_size
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
