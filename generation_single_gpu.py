@@ -132,7 +132,7 @@ def main(args, unparsed):
     total_steps = int(math.ceil(args.num_samples / batch_size)) 
     print(f"Total Steps for Sampling: {total_steps}")
     if isinstance(args.num_classes, tuple):
-        pbar = trange(args.num_classes[0], args.num_classes[1], desc="Sampling", disable=False)
+        pbar = tqdm(range(args.num_classes[0], args.num_classes[1]), desc="Sampling", disable=False)
     else:
         pbar = trange(args.num_classes, desc="Sampling", disable=False)
     total = 0
