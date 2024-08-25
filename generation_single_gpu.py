@@ -133,6 +133,9 @@ def main(args, unparsed):
     print(f"Total Steps for Sampling: {total_steps}")
     if isinstance(args.num_classes, tuple):
         pbar = tqdm(range(args.num_classes[0], args.num_classes[1]), desc="Sampling", disable=False)
+    elif isinstance(args.num_classes, str) and ',' in args.num_classes:
+        start, end = map(int, args.num_classes.split(','))
+        pbar = tqdm(range(start, end), desc="Sampling", disable=False)
     else:
         pbar = trange(args.num_classes, desc="Sampling", disable=False)
     total = 0
