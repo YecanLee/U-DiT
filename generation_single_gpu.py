@@ -32,7 +32,16 @@ from PIL import Image
 import numpy as np
 import math
 import argparse
+from typing import List, Optional
 
+
+def int_or_tuple(value):
+    """
+    A helper function to convert the input number to a tuple if it is a range
+    """
+    if "," in value:
+        return tuple(map(int, value.split(",")))
+    return int(value)
 
 def create_npz_from_sample_folder(sample_dir, num=50_000):
     """
@@ -122,7 +131,10 @@ def main(args, unparsed):
     # To make things evenly-divisible, we'll sample a bit more than we need and then discard the extra samples:
     total_steps = int(math.ceil(args.num_samples / batch_size)) 
     print(f"Total Steps for Sampling: {total_steps}")
-    pbar = trange(args.num_classes, desc="Sampling", disable=False)
+    if isinstance(args.num_classes, tuple):
+        pbar = trange(args.num_classes[0], args.num_classes[1], desc="Sampling", disable=False)
+    else:
+        pbar = trange(args.num_classes, desc="Sampling", disable=False)
     total = 0
     iterator = args.num_samples_per_class // args.batch_size 
     iteration_per_class = iterator + 1 if args.num_samples_per_class % args.batch_size != 0 else iterator
@@ -168,7 +180,7 @@ if __name__ == "__main__":
     parser.add_argument("--batch-size", type=int, default=32)
     parser.add_argument("--num-samples", type=int, default=50_000)
     parser.add_argument("--image-size", type=int, choices=[256, 512], default=256)
-    parser.add_argument("--num-classes", type=int, default=1000)
+    parser.add_argument("--num-classes", type=int_or_tuple, default=1000) # this should either ve a number or a range, for example 1000 or 200-500
     parser.add_argument("--num-samples-per-class", type=int, default=50)
     parser.add_argument("--cfg-scale",  type=float, default=1.5)
     parser.add_argument("--num-sampling-steps", type=int, default=250)
