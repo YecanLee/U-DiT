@@ -131,7 +131,7 @@ def main(args, unparsed):
     # To make things evenly-divisible, we'll sample a bit more than we need and then discard the extra samples:
     total_steps = int(math.ceil(args.num_samples / batch_size)) 
     print(f"Total Steps for Sampling: {total_steps}")
-    pbar = tqdm(range(193, 1000), desc="Sampling", disable=False)
+    pbar = tqdm(range(args.num_samples_per_class), desc="Sampling", disable=False)
     total = 0
     iterator = args.num_samples_per_class // args.batch_size 
     iteration_per_class = iterator + 1 if args.num_samples_per_class % args.batch_size != 0 else iterator
